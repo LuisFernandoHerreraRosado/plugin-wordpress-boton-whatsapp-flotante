@@ -384,7 +384,10 @@ class WhatsApp_Floating_Button {
             return '';
         }
 
-        $url = "https://wa.me/" . preg_replace( '/[^0-9]/', '', $phone );
+        $phone_clean = preg_replace( '/[^0-9]/', '', $phone );
+        $url = "https://wa.me/" . $phone_clean;
+
+        $encoded_message = rawurlencode( trim( $message ) );
 
         if ( $include_url ) {
             $current_url = is_singular() ? get_permalink() : '';
@@ -392,12 +395,16 @@ class WhatsApp_Floating_Button {
                 $current_url = home_url( add_query_arg( array(), $GLOBALS['wp']->request ) );
             }
             if ( ! empty( $current_url ) ) {
-                $message .= ( ! empty( $message ) ? "\r\n\r\n" : "" ) . "(Enviado desde: " . $current_url . ")";
+                // Forzamos el salto de línea usando el código de escape %0A antes de "(Enviado"
+                if ( ! empty( $encoded_message ) ) {
+                    $encoded_message .= "%0A";
+                }
+                $encoded_message .= rawurlencode( "(Enviado desde: " . $current_url . ")" );
             }
         }
 
-        if ( ! empty( $message ) ) {
-            $url .= "?text=" . rawurlencode( $message );
+        if ( ! empty( $encoded_message ) ) {
+            $url .= "?text=" . $encoded_message;
         }
 
         return $url;
