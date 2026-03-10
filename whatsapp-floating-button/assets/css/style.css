@@ -18,8 +18,7 @@
 
 .wfb-floating-button svg,
 .wfb-inline-button svg {
-    width: 60%;
-    height: 60%;
+    /* El tamaño se controla ahora vía inline-style para mayor control */
 }
 
 .wfb-inline-button {
