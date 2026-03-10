@@ -16,9 +16,27 @@
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
 }
 
-.wfb-floating-button svg {
+.wfb-floating-button svg,
+.wfb-inline-button svg {
     width: 60%;
     height: 60%;
+}
+
+.wfb-inline-button {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-decoration: none;
+    overflow: visible;
+}
+
+.wfb-inline-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
 }
 
 .wfb-text {
@@ -35,12 +53,19 @@
     pointer-events: none;
 }
 
-.wfb-floating-button:hover .wfb-text {
+.wfb-floating-button:hover .wfb-text,
+.wfb-inline-button:hover .wfb-text {
     opacity: 1;
     visibility: visible;
 }
 
 /* Posicionamiento del texto */
+.wfb-inline-button .wfb-text {
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+}
+
 .wfb-floating-button[style*="right: 20px"] .wfb-text {
     right: 70px;
 }

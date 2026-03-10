@@ -33,6 +33,9 @@ class WhatsApp_Floating_Button {
         // Hooks para el frontend
         add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
         add_action( 'wp_footer', array( $this, 'render_button' ) );
+
+        // Shortcode
+        add_shortcode( 'whatsapp_button', array( $this, 'shortcode_handler' ) );
     }
 
     /**
@@ -118,6 +121,14 @@ class WhatsApp_Floating_Button {
             'whatsapp-floating-button',
             'wfb_main_section'
         );
+
+        add_settings_field(
+            'wfb_include_url',
+            'Incluir URL en el mensaje',
+            array( $this, 'field_include_url_html' ),
+            'whatsapp-floating-button',
+            'wfb_main_section'
+        );
     }
 
     /**
@@ -132,6 +143,7 @@ class WhatsApp_Floating_Button {
         $new_input['position'] = in_array( $input['position'], array( 'right', 'left' ) ) ? $input['position'] : 'right';
         $new_input['color'] = sanitize_hex_color( $input['color'] );
         $new_input['size'] = absint( $input['size'] );
+        $new_input['include_url'] = isset( $input['include_url'] ) ? 1 : 0;
 
         return $new_input;
     }
@@ -184,6 +196,13 @@ class WhatsApp_Floating_Button {
         echo "<input type='number' name='wfb_settings[size]' value='" . esc_attr( $value ) . "' min='40' max='100'>";
     }
 
+    public function field_include_url_html() {
+        $options = get_option( 'wfb_settings' );
+        $checked = isset( $options['include_url'] ) && $options['include_url'] ? 'checked' : '';
+        echo "<input type='checkbox' name='wfb_settings[include_url]' value='1' $checked>";
+        echo "<p class='description'>Si se activa, se añadirá la URL de la página actual al final del mensaje.</p>";
+    }
+
     /**
      * Renderizar la página de ajustes
      */
@@ -214,34 +233,56 @@ class WhatsApp_Floating_Button {
     }
 
     /**
-     * Renderizar el botón en el footer
+     * Obtener la URL de WhatsApp configurada
      */
-    public function render_button() {
-        $options = get_option( 'wfb_settings' );
-
-        if ( ! isset( $options['show'] ) || ! $options['show'] ) {
-            return;
-        }
-
-        $phone   = isset( $options['phone'] ) ? $options['phone'] : '';
-        $message = isset( $options['message'] ) ? $options['message'] : '';
-        $text    = isset( $options['text'] ) ? $options['text'] : '';
-        $pos     = isset( $options['position'] ) ? $options['position'] : 'right';
-        $color   = isset( $options['color'] ) ? $options['color'] : '#25D366';
-        $size    = isset( $options['size'] ) ? $options['size'] : '60';
-
+    private function get_whatsapp_url( $phone, $message, $include_url ) {
         if ( empty( $phone ) ) {
-            return;
+            return '';
         }
 
         $url = "https://wa.me/" . preg_replace( '/[^0-9]/', '', $phone );
+
+        if ( $include_url ) {
+            $current_url = is_singular() ? get_permalink() : home_url( add_query_arg( array(), $GLOBALS['wp']->request ) );
+            $message .= ( ! empty( $message ) ? " " : "" ) . "(Enviado desde: " . $current_url . ")";
+        }
+
         if ( ! empty( $message ) ) {
             $url .= "?text=" . rawurlencode( $message );
         }
 
-        $style = "bottom: 20px; {$pos}: 20px; background-color: {$color}; width: {$size}px; height: {$size}px;";
+        return $url;
+    }
+
+    /**
+     * Generar el HTML del botón
+     */
+    private function get_button_html( $args ) {
+        $phone       = isset( $args['phone'] ) ? $args['phone'] : '';
+        $message     = isset( $args['message'] ) ? $args['message'] : '';
+        $text        = isset( $args['text'] ) ? $args['text'] : '';
+        $include_url = isset( $args['include_url'] ) ? (bool) $args['include_url'] : false;
+        $color       = isset( $args['color'] ) ? $args['color'] : '#25D366';
+        $size        = isset( $args['size'] ) ? $args['size'] : '60';
+        $is_floating = isset( $args['is_floating'] ) ? (bool) $args['is_floating'] : false;
+        $pos         = isset( $args['position'] ) ? $args['position'] : 'right';
+
+        $url = $this->get_whatsapp_url( $phone, $message, $include_url );
+
+        if ( empty( $url ) ) {
+            return '';
+        }
+
+        $class = $is_floating ? 'wfb-floating-button' : 'wfb-inline-button';
+        $style = "background-color: {$color}; width: {$size}px; height: {$size}px;";
+
+        if ( $is_floating ) {
+            $style .= " bottom: 20px; {$pos}: 20px;";
+        }
+
+        ob_start();
         ?>
-        <a href="<?php echo esc_url( $url ); ?>" class="wfb-floating-button" target="_blank" rel="nofollow" style="<?php echo esc_attr( $style ); ?>">
+        <a href="<?php echo esc_url( $url ); ?>" class="<?php echo esc_attr( $class ); ?>" target="_blank" rel="nofollow" style="<?php echo esc_attr( $style ); ?>">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" width="30" height="30" fill="white">
                 <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.1 0-65.6-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-5.5-2.8-23.4-8.6-44.5-27.4-16.4-14.6-27.5-32.8-30.7-38.4-3.2-5.6-.3-8.6 2.5-11.4 2.5-2.5 5.5-6.5 8.3-9.7 2.8-3.2 3.7-5.5 5.5-9.2 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 13.2 5.8 23.5 9.2 31.5 11.8 13.3 4.2 25.4 3.6 35 2.2 10.7-1.5 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/>
             </svg>
@@ -250,6 +291,56 @@ class WhatsApp_Floating_Button {
             <?php endif; ?>
         </a>
         <?php
+        return ob_get_clean();
+    }
+
+    /**
+     * Handler para el shortcode [whatsapp_button]
+     */
+    public function shortcode_handler( $atts ) {
+        $options = get_option( 'wfb_settings' );
+
+        $atts = shortcode_atts( array(
+            'phone'       => isset( $options['phone'] ) ? $options['phone'] : '',
+            'message'     => isset( $options['message'] ) ? $options['message'] : '',
+            'text'        => isset( $options['text'] ) ? $options['text'] : '',
+            'include_url' => isset( $options['include_url'] ) ? $options['include_url'] : 0,
+            'color'       => isset( $options['color'] ) ? $options['color'] : '#25D366',
+            'size'        => isset( $options['size'] ) ? $options['size'] : '60',
+        ), $atts, 'whatsapp_button' );
+
+        $args = array(
+            'phone'       => $atts['phone'],
+            'message'     => $atts['message'],
+            'text'        => $atts['text'],
+            'include_url' => $atts['include_url'],
+            'color'       => $atts['color'],
+            'size'        => $atts['size'],
+            'is_floating' => false
+        );
+
+        return $this->get_button_html( $args );
+    }
+
+    public function render_button() {
+        $options = get_option( 'wfb_settings' );
+
+        if ( ! isset( $options['show'] ) || ! $options['show'] ) {
+            return;
+        }
+
+        $args = array(
+            'phone'       => isset( $options['phone'] ) ? $options['phone'] : '',
+            'message'     => isset( $options['message'] ) ? $options['message'] : '',
+            'text'        => isset( $options['text'] ) ? $options['text'] : '',
+            'include_url' => isset( $options['include_url'] ) ? $options['include_url'] : 0,
+            'position'    => isset( $options['position'] ) ? $options['position'] : 'right',
+            'color'       => isset( $options['color'] ) ? $options['color'] : '#25D366',
+            'size'        => isset( $options['size'] ) ? $options['size'] : '60',
+            'is_floating' => true
+        );
+
+        echo $this->get_button_html( $args );
     }
 
 }
