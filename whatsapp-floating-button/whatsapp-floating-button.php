@@ -392,7 +392,7 @@ class WhatsApp_Floating_Button {
                 $current_url = home_url( add_query_arg( array(), $GLOBALS['wp']->request ) );
             }
             if ( ! empty( $current_url ) ) {
-                $message .= ( ! empty( $message ) ? " " : "" ) . "(Enviado desde: " . $current_url . ")";
+                $message .= ( ! empty( $message ) ? "\n" : "" ) . "(Enviado desde: " . $current_url . ")";
             }
         }
 
