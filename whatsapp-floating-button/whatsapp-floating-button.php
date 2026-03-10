@@ -167,6 +167,22 @@ class WhatsApp_Floating_Button {
             'whatsapp-floating-button',
             'wfb_shortcode_section'
         );
+
+        add_settings_field(
+            'wfb_shortcode_phone',
+            'Teléfono Predeterminado',
+            array( $this, 'field_shortcode_phone_html' ),
+            'whatsapp-floating-button',
+            'wfb_shortcode_section'
+        );
+
+        add_settings_field(
+            'wfb_shortcode_message',
+            'Mensaje Predeterminado',
+            array( $this, 'field_shortcode_message_html' ),
+            'whatsapp-floating-button',
+            'wfb_shortcode_section'
+        );
     }
 
     /**
@@ -185,6 +201,8 @@ class WhatsApp_Floating_Button {
         $new_input['shortcode_color'] = sanitize_hex_color( $input['shortcode_color'] );
         $new_input['shortcode_size'] = absint( $input['shortcode_size'] );
         $new_input['shortcode_text'] = sanitize_text_field( $input['shortcode_text'] );
+        $new_input['shortcode_phone'] = sanitize_text_field( $input['shortcode_phone'] );
+        $new_input['shortcode_message'] = sanitize_text_field( $input['shortcode_message'] );
 
         return $new_input;
     }
@@ -252,7 +270,7 @@ class WhatsApp_Floating_Button {
 
     public function field_shortcode_size_html() {
         $options = get_option( 'wfb_settings' );
-        $value = isset( $options['shortcode_size'] ) ? $options['shortcode_size'] : '50';
+        $value = isset( $options['shortcode_size'] ) ? $options['shortcode_size'] : '60';
         echo "<input type='number' name='wfb_settings[shortcode_size]' value='" . esc_attr( $value ) . "' min='30' max='100'>";
     }
 
@@ -260,6 +278,20 @@ class WhatsApp_Floating_Button {
         $options = get_option( 'wfb_settings' );
         $value = isset( $options['shortcode_text'] ) ? $options['shortcode_text'] : '';
         echo "<input type='text' name='wfb_settings[shortcode_text]' value='" . esc_attr( $value ) . "' placeholder='Escríbenos'>";
+    }
+
+    public function field_shortcode_phone_html() {
+        $options = get_option( 'wfb_settings' );
+        $value = isset( $options['shortcode_phone'] ) ? $options['shortcode_phone'] : '';
+        echo "<input type='text' name='wfb_settings[shortcode_phone]' value='" . esc_attr( $value ) . "' placeholder='Ej: 34600000000'>";
+        echo "<p class='description'>Si se deja vacío, usará el teléfono de la configuración general.</p>";
+    }
+
+    public function field_shortcode_message_html() {
+        $options = get_option( 'wfb_settings' );
+        $value = isset( $options['shortcode_message'] ) ? $options['shortcode_message'] : '';
+        echo "<input type='text' name='wfb_settings[shortcode_message]' value='" . esc_attr( $value ) . "' class='regular-text'>";
+        echo "<p class='description'>Si se deja vacío, usará el mensaje de la configuración general.</p>";
     }
 
     /**
@@ -355,8 +387,13 @@ class WhatsApp_Floating_Button {
         $url = "https://wa.me/" . preg_replace( '/[^0-9]/', '', $phone );
 
         if ( $include_url ) {
-            $current_url = is_singular() ? get_permalink() : home_url( add_query_arg( array(), $GLOBALS['wp']->request ) );
-            $message .= ( ! empty( $message ) ? " " : "" ) . "(Enviado desde: " . $current_url . ")";
+            $current_url = is_singular() ? get_permalink() : '';
+            if ( empty( $current_url ) && isset( $GLOBALS['wp'] ) ) {
+                $current_url = home_url( add_query_arg( array(), $GLOBALS['wp']->request ) );
+            }
+            if ( ! empty( $current_url ) ) {
+                $message .= ( ! empty( $message ) ? " " : "" ) . "(Enviado desde: " . $current_url . ")";
+            }
         }
 
         if ( ! empty( $message ) ) {
@@ -394,8 +431,8 @@ class WhatsApp_Floating_Button {
 
         ob_start();
         ?>
-        <a href="<?php echo esc_url( $url ); ?>" class="<?php echo esc_attr( $class ); ?>" target="_blank" rel="nofollow" style="<?php echo esc_attr( $style ); ?>">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" fill="white" style="width: 60%; height: auto; max-height: 60%; display: block;">
+        <a href="<?php echo esc_url( $url ); ?>" class="<?php echo esc_attr( $class ); ?>" target="_blank" rel="nofollow" style="<?php echo esc_attr( $style ); ?> overflow: visible !important;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" fill="white" style="width: 55%; height: auto; max-height: 55%; display: block; margin: auto;">
                 <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.1 0-65.6-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-5.5-2.8-23.4-8.6-44.5-27.4-16.4-14.6-27.5-32.8-30.7-38.4-3.2-5.6-.3-8.6 2.5-11.4 2.5-2.5 5.5-6.5 8.3-9.7 2.8-3.2 3.7-5.5 5.5-9.2 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 13.2 5.8 23.5 9.2 31.5 11.8 13.3 4.2 25.4 3.6 35 2.2 10.7-1.5 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/>
             </svg>
             <?php if ( ! empty( $text ) ) : ?>
@@ -416,17 +453,20 @@ class WhatsApp_Floating_Button {
         }
 
         $atts = shortcode_atts( array(
-            'phone'       => isset( $options['phone'] ) ? $options['phone'] : '',
-            'message'     => isset( $options['message'] ) ? $options['message'] : '',
+            'phone'       => ! empty( $options['shortcode_phone'] ) ? $options['shortcode_phone'] : (isset($options['phone']) ? $options['phone'] : ''),
+            'message'     => ! empty( $options['shortcode_message'] ) ? $options['shortcode_message'] : (isset($options['message']) ? $options['message'] : ''),
             'text'        => isset( $options['shortcode_text'] ) ? $options['shortcode_text'] : (isset($options['text']) ? $options['text'] : ''),
             'include_url' => isset( $options['include_url'] ) ? $options['include_url'] : 0,
             'color'       => ! empty( $options['shortcode_color'] ) ? $options['shortcode_color'] : '#25D366',
-            'size'        => ! empty( $options['shortcode_size'] ) ? $options['shortcode_size'] : '50',
+            'size'        => ! empty( $options['shortcode_size'] ) ? $options['shortcode_size'] : '60',
         ), $atts, 'whatsapp_button' );
 
         // Si no hay teléfono configurado ni en el shortcode, el botón no se mostrará.
         // Aseguramos que haya al menos un valor.
         if ( empty( $atts['phone'] ) ) {
+            if ( current_user_can( 'manage_options' ) ) {
+                return '<div style="background:#fff2f2;border:1px solid #ffa0a0;padding:10px;color:#d63638;"><strong>WhatsApp Button Error:</strong> Falta el número de teléfono en los ajustes o en el shortcode.</div>';
+            }
             return '<!-- WhatsApp Button Shortcode: Falta el número de teléfono -->';
         }
 
@@ -485,12 +525,12 @@ class WhatsApp_Button_Widget extends WP_Widget {
         $options = get_option( 'wfb_settings' );
 
         $button_args = array(
-            'phone'       => ! empty( $instance['phone'] ) ? $instance['phone'] : (isset($options['phone']) ? $options['phone'] : ''),
-            'message'     => ! empty( $instance['message'] ) ? $instance['message'] : (isset($options['message']) ? $options['message'] : ''),
+            'phone'       => ! empty( $instance['phone'] ) ? $instance['phone'] : (! empty($options['shortcode_phone']) ? $options['shortcode_phone'] : (isset($options['phone']) ? $options['phone'] : '')),
+            'message'     => ! empty( $instance['message'] ) ? $instance['message'] : (! empty($options['shortcode_message']) ? $options['shortcode_message'] : (isset($options['message']) ? $options['message'] : '')),
             'text'        => ! empty( $instance['text'] ) ? $instance['text'] : (isset($options['shortcode_text']) ? $options['shortcode_text'] : (isset($options['text']) ? $options['text'] : '')),
             'include_url' => isset( $instance['include_url'] ) ? $instance['include_url'] : (isset($options['include_url']) ? $options['include_url'] : 0),
             'color'       => ! empty( $instance['color'] ) ? $instance['color'] : (isset($options['shortcode_color']) ? $options['shortcode_color'] : '#25D366'),
-            'size'        => ! empty( $instance['size'] ) ? $instance['size'] : (isset($options['shortcode_size']) ? $options['shortcode_size'] : '50'),
+            'size'        => ! empty( $instance['size'] ) ? $instance['size'] : (isset($options['shortcode_size']) ? $options['shortcode_size'] : '60'),
             'is_floating' => false
         );
 
@@ -506,7 +546,7 @@ class WhatsApp_Button_Widget extends WP_Widget {
         $include_url = isset( $instance['include_url'] ) ? (bool) $instance['include_url'] : true;
         $options     = get_option( 'wfb_settings' );
         $color       = ! empty( $instance['color'] ) ? $instance['color'] : (isset($options['shortcode_color']) ? $options['shortcode_color'] : '#25D366');
-        $size        = ! empty( $instance['size'] ) ? $instance['size'] : (isset($options['shortcode_size']) ? $options['shortcode_size'] : '50');
+        $size        = ! empty( $instance['size'] ) ? $instance['size'] : (isset($options['shortcode_size']) ? $options['shortcode_size'] : '60');
         ?>
         <p>
             <label for="<?php echo esc_attr( $this->get_field_id( 'phone' ) ); ?>">Número de WhatsApp:</label>
