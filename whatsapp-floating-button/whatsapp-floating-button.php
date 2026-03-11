@@ -46,6 +46,31 @@ class WhatsApp_Floating_Button {
     }
 
     /**
+     * Obtener los ajustes del plugin con valores por defecto
+     */
+    public static function get_options() {
+        $defaults = array(
+            'phone'             => '',
+            'message'           => '',
+            'text'              => '',
+            'show'              => 1,
+            'position'          => 'right',
+            'color'             => '#25D366',
+            'size'              => '60',
+            'include_url'       => 1,
+            'shortcode_color'   => '#25D366',
+            'shortcode_size'    => '60',
+            'shortcode_text'    => '',
+            'shortcode_phone'   => '',
+            'shortcode_message' => '',
+        );
+
+        $options = get_option( 'wfb_settings', array() );
+
+        return wp_parse_args( $options, $defaults );
+    }
+
+    /**
      * Añadir menú en el panel de administración
      */
     public function add_admin_menu() {
@@ -209,32 +234,32 @@ class WhatsApp_Floating_Button {
 
     // Funciones para renderizar los campos de entrada
     public function field_phone_html() {
-        $options = get_option( 'wfb_settings' );
-        $value = isset( $options['phone'] ) ? $options['phone'] : '';
+        $options = self::get_options();
+        $value = $options['phone'];
         echo "<input type='text' name='wfb_settings[phone]' value='" . esc_attr( $value ) . "' placeholder='Ej: 34600000000'>";
     }
 
     public function field_message_html() {
-        $options = get_option( 'wfb_settings' );
-        $value = isset( $options['message'] ) ? $options['message'] : '';
+        $options = self::get_options();
+        $value = $options['message'];
         echo "<input type='text' name='wfb_settings[message]' value='" . esc_attr( $value ) . "' class='regular-text'>";
     }
 
     public function field_text_html() {
-        $options = get_option( 'wfb_settings' );
-        $value = isset( $options['text'] ) ? $options['text'] : '';
+        $options = self::get_options();
+        $value = $options['text'];
         echo "<input type='text' name='wfb_settings[text]' value='" . esc_attr( $value ) . "' placeholder='Escríbenos'>";
     }
 
     public function field_show_html() {
-        $options = get_option( 'wfb_settings' );
-        $checked = isset( $options['show'] ) && $options['show'] ? 'checked' : '';
+        $options = self::get_options();
+        $checked = $options['show'] ? 'checked' : '';
         echo "<input type='checkbox' name='wfb_settings[show]' value='1' $checked>";
     }
 
     public function field_position_html() {
-        $options = get_option( 'wfb_settings' );
-        $value = isset( $options['position'] ) ? $options['position'] : 'right';
+        $options = self::get_options();
+        $value = $options['position'];
         ?>
         <select name="wfb_settings[position]">
             <option value="right" <?php selected( $value, 'right' ); ?>>Derecha</option>
@@ -244,52 +269,52 @@ class WhatsApp_Floating_Button {
     }
 
     public function field_color_html() {
-        $options = get_option( 'wfb_settings' );
-        $value = isset( $options['color'] ) ? $options['color'] : '#25D366';
+        $options = self::get_options();
+        $value = $options['color'];
         echo "<input type='color' name='wfb_settings[color]' value='" . esc_attr( $value ) . "'>";
     }
 
     public function field_size_html() {
-        $options = get_option( 'wfb_settings' );
-        $value = isset( $options['size'] ) ? $options['size'] : '60';
+        $options = self::get_options();
+        $value = $options['size'];
         echo "<input type='number' name='wfb_settings[size]' value='" . esc_attr( $value ) . "' min='40' max='100'>";
     }
 
     public function field_include_url_html() {
-        $options = get_option( 'wfb_settings' );
-        $checked = isset( $options['include_url'] ) && $options['include_url'] ? 'checked' : '';
+        $options = self::get_options();
+        $checked = $options['include_url'] ? 'checked' : '';
         echo "<input type='checkbox' name='wfb_settings[include_url]' value='1' $checked>";
         echo "<p class='description'>Si se activa, se añadirá la URL de la página actual al final del mensaje.</p>";
     }
 
     public function field_shortcode_color_html() {
-        $options = get_option( 'wfb_settings' );
-        $value = isset( $options['shortcode_color'] ) ? $options['shortcode_color'] : '#25D366';
+        $options = self::get_options();
+        $value = $options['shortcode_color'];
         echo "<input type='color' name='wfb_settings[shortcode_color]' value='" . esc_attr( $value ) . "'>";
     }
 
     public function field_shortcode_size_html() {
-        $options = get_option( 'wfb_settings' );
-        $value = isset( $options['shortcode_size'] ) ? $options['shortcode_size'] : '60';
+        $options = self::get_options();
+        $value = $options['shortcode_size'];
         echo "<input type='number' name='wfb_settings[shortcode_size]' value='" . esc_attr( $value ) . "' min='30' max='100'>";
     }
 
     public function field_shortcode_text_html() {
-        $options = get_option( 'wfb_settings' );
-        $value = isset( $options['shortcode_text'] ) ? $options['shortcode_text'] : '';
+        $options = self::get_options();
+        $value = $options['shortcode_text'];
         echo "<input type='text' name='wfb_settings[shortcode_text]' value='" . esc_attr( $value ) . "' placeholder='Escríbenos'>";
     }
 
     public function field_shortcode_phone_html() {
-        $options = get_option( 'wfb_settings' );
-        $value = isset( $options['shortcode_phone'] ) ? $options['shortcode_phone'] : '';
+        $options = self::get_options();
+        $value = $options['shortcode_phone'];
         echo "<input type='text' name='wfb_settings[shortcode_phone]' value='" . esc_attr( $value ) . "' placeholder='Ej: 34600000000'>";
         echo "<p class='description'>Si se deja vacío, usará el teléfono de la configuración general.</p>";
     }
 
     public function field_shortcode_message_html() {
-        $options = get_option( 'wfb_settings' );
-        $value = isset( $options['shortcode_message'] ) ? $options['shortcode_message'] : '';
+        $options = self::get_options();
+        $value = $options['shortcode_message'];
         echo "<input type='text' name='wfb_settings[shortcode_message]' value='" . esc_attr( $value ) . "' class='regular-text'>";
         echo "<p class='description'>Si se deja vacío, usará el mensaje de la configuración general.</p>";
     }
@@ -395,15 +420,8 @@ class WhatsApp_Floating_Button {
                 $current_url = home_url( add_query_arg( array(), $GLOBALS['wp']->request ) );
             }
             if ( ! empty( $current_url ) ) {
-
-                // Forzamos el salto de línea usando el código de escape %0A antes de "(Enviado"
-                if ( ! empty( $encoded_message ) ) {
-                    $encoded_message .= "%0A";
-
-                // Forzamos el salto de línea usando el código de escape %0A%0A antes de "(Enviado"
                 if ( ! empty( $encoded_message ) ) {
                     $encoded_message .= "%0A%0A";
-
                 }
                 $encoded_message .= rawurlencode( "(Enviado desde: " . $current_url . ")" );
             }
@@ -414,7 +432,6 @@ class WhatsApp_Floating_Button {
         }
 
         return $url;
-    }
     }
     /**
      * Generar el HTML del botón
@@ -462,18 +479,15 @@ class WhatsApp_Floating_Button {
      * Handler para el shortcode [whatsapp_button]
      */
     public function shortcode_handler( $atts ) {
-        $options = get_option( 'wfb_settings' );
-        if ( ! is_array( $options ) ) {
-            $options = array();
-        }
+        $options = self::get_options();
 
         $atts = shortcode_atts( array(
-            'phone'       => ! empty( $options['shortcode_phone'] ) ? $options['shortcode_phone'] : (isset($options['phone']) ? $options['phone'] : ''),
-            'message'     => ! empty( $options['shortcode_message'] ) ? $options['shortcode_message'] : (isset($options['message']) ? $options['message'] : ''),
-            'text'        => isset( $options['shortcode_text'] ) ? $options['shortcode_text'] : (isset($options['text']) ? $options['text'] : ''),
-            'include_url' => isset( $options['include_url'] ) ? $options['include_url'] : 0,
-            'color'       => ! empty( $options['shortcode_color'] ) ? $options['shortcode_color'] : '#25D366',
-            'size'        => ! empty( $options['shortcode_size'] ) ? $options['shortcode_size'] : '60',
+            'phone'       => ! empty( $options['shortcode_phone'] ) ? $options['shortcode_phone'] : $options['phone'],
+            'message'     => ! empty( $options['shortcode_message'] ) ? $options['shortcode_message'] : $options['message'],
+            'text'        => ! empty( $options['shortcode_text'] ) ? $options['shortcode_text'] : $options['text'],
+            'include_url' => $options['include_url'],
+            'color'       => ! empty( $options['shortcode_color'] ) ? $options['shortcode_color'] : $options['color'],
+            'size'        => ! empty( $options['shortcode_size'] ) ? $options['shortcode_size'] : $options['size'],
         ), $atts, 'whatsapp_button' );
 
         // Si no hay teléfono configurado ni en el shortcode, el botón no se mostrará.
@@ -499,20 +513,20 @@ class WhatsApp_Floating_Button {
     }
 
     public function render_button() {
-        $options = get_option( 'wfb_settings' );
+        $options = self::get_options();
 
-        if ( ! isset( $options['show'] ) || ! $options['show'] ) {
+        if ( ! $options['show'] ) {
             return;
         }
 
         $args = array(
-            'phone'       => isset( $options['phone'] ) ? $options['phone'] : '',
-            'message'     => isset( $options['message'] ) ? $options['message'] : '',
-            'text'        => isset( $options['text'] ) ? $options['text'] : '',
-            'include_url' => isset( $options['include_url'] ) ? $options['include_url'] : 0,
-            'position'    => isset( $options['position'] ) ? $options['position'] : 'right',
-            'color'       => isset( $options['color'] ) ? $options['color'] : '#25D366',
-            'size'        => isset( $options['size'] ) ? $options['size'] : '60',
+            'phone'       => $options['phone'],
+            'message'     => $options['message'],
+            'text'        => $options['text'],
+            'include_url' => $options['include_url'],
+            'position'    => $options['position'],
+            'color'       => $options['color'],
+            'size'        => $options['size'],
             'is_floating' => true
         );
 
@@ -537,15 +551,15 @@ class WhatsApp_Button_Widget extends WP_Widget {
     public function widget( $args, $instance ) {
         echo $args['before_widget'];
 
-        $options = get_option( 'wfb_settings' );
+        $options = WhatsApp_Floating_Button::get_options();
 
         $button_args = array(
-            'phone'       => ! empty( $instance['phone'] ) ? $instance['phone'] : (! empty($options['shortcode_phone']) ? $options['shortcode_phone'] : (isset($options['phone']) ? $options['phone'] : '')),
-            'message'     => ! empty( $instance['message'] ) ? $instance['message'] : (! empty($options['shortcode_message']) ? $options['shortcode_message'] : (isset($options['message']) ? $options['message'] : '')),
-            'text'        => ! empty( $instance['text'] ) ? $instance['text'] : (isset($options['shortcode_text']) ? $options['shortcode_text'] : (isset($options['text']) ? $options['text'] : '')),
-            'include_url' => isset( $instance['include_url'] ) ? $instance['include_url'] : (isset($options['include_url']) ? $options['include_url'] : 0),
-            'color'       => ! empty( $instance['color'] ) ? $instance['color'] : (isset($options['shortcode_color']) ? $options['shortcode_color'] : '#25D366'),
-            'size'        => ! empty( $instance['size'] ) ? $instance['size'] : (isset($options['shortcode_size']) ? $options['shortcode_size'] : '60'),
+            'phone'       => ! empty( $instance['phone'] ) ? $instance['phone'] : (! empty($options['shortcode_phone']) ? $options['shortcode_phone'] : $options['phone']),
+            'message'     => ! empty( $instance['message'] ) ? $instance['message'] : (! empty($options['shortcode_message']) ? $options['shortcode_message'] : $options['message']),
+            'text'        => ! empty( $instance['text'] ) ? $instance['text'] : (! empty($options['shortcode_text']) ? $options['shortcode_text'] : $options['text']),
+            'include_url' => isset( $instance['include_url'] ) ? $instance['include_url'] : $options['include_url'],
+            'color'       => ! empty( $instance['color'] ) ? $instance['color'] : (! empty($options['shortcode_color']) ? $options['shortcode_color'] : $options['color']),
+            'size'        => ! empty( $instance['size'] ) ? $instance['size'] : (! empty($options['shortcode_size']) ? $options['shortcode_size'] : $options['size']),
             'is_floating' => false
         );
 
@@ -559,9 +573,9 @@ class WhatsApp_Button_Widget extends WP_Widget {
         $message     = ! empty( $instance['message'] ) ? $instance['message'] : '';
         $text        = ! empty( $instance['text'] ) ? $instance['text'] : '';
         $include_url = isset( $instance['include_url'] ) ? (bool) $instance['include_url'] : true;
-        $options     = get_option( 'wfb_settings' );
-        $color       = ! empty( $instance['color'] ) ? $instance['color'] : (isset($options['shortcode_color']) ? $options['shortcode_color'] : '#25D366');
-        $size        = ! empty( $instance['size'] ) ? $instance['size'] : (isset($options['shortcode_size']) ? $options['shortcode_size'] : '60');
+        $options     = WhatsApp_Floating_Button::get_options();
+        $color       = ! empty( $instance['color'] ) ? $instance['color'] : (! empty($options['shortcode_color']) ? $options['shortcode_color'] : $options['color']);
+        $size        = ! empty( $instance['size'] ) ? $instance['size'] : (! empty($options['shortcode_size']) ? $options['shortcode_size'] : $options['size']);
         ?>
         <p>
             <label for="<?php echo esc_attr( $this->get_field_id( 'phone' ) ); ?>">Número de WhatsApp:</label>
