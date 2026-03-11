@@ -395,9 +395,15 @@ class WhatsApp_Floating_Button {
                 $current_url = home_url( add_query_arg( array(), $GLOBALS['wp']->request ) );
             }
             if ( ! empty( $current_url ) ) {
+
                 // Forzamos el salto de línea usando el código de escape %0A antes de "(Enviado"
                 if ( ! empty( $encoded_message ) ) {
                     $encoded_message .= "%0A";
+
+                // Forzamos el salto de línea usando el código de escape %0A%0A antes de "(Enviado"
+                if ( ! empty( $encoded_message ) ) {
+                    $encoded_message .= "%0A%0A";
+
                 }
                 $encoded_message .= rawurlencode( "(Enviado desde: " . $current_url . ")" );
             }
@@ -409,7 +415,7 @@ class WhatsApp_Floating_Button {
 
         return $url;
     }
-
+    }
     /**
      * Generar el HTML del botón
      */
