@@ -423,7 +423,7 @@ class WhatsApp_Floating_Button {
                 if ( ! empty( $encoded_message ) ) {
                     $encoded_message .= "%0A%0A";
                 }
-                $encoded_message .= rawurlencode( "(Enviado desde: " . $current_url . ")" );
+                $encoded_message .= rawurlencode( "(\n Enviado desde:" . $current_url . ")" );
             }
         }
 
